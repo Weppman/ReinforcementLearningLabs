@@ -21,9 +21,7 @@ def run_eGreedy(epsilon=0.1, runs=100, iterations=1000):
 
             valueGenerated = arms[indexPicked].pull()
             N[indexPicked] += 1
-            Q[indexPicked] += (1 / N[indexPicked]) * (
-                valueGenerated - Q[indexPicked]
-            )
+            Q[indexPicked] += (1 / N[indexPicked]) * (valueGenerated - Q[indexPicked])
 
             rewards[run, i] = valueGenerated
 
@@ -42,9 +40,7 @@ def run_greedyInitialization(initial_Q=5.0, runs=100, iterations=1000):
 
             valueGenerated = arms[indexPicked].pull()
             N[indexPicked] += 1
-            Q[indexPicked] += (1 / N[indexPicked]) * (
-                valueGenerated - Q[indexPicked]
-            )
+            Q[indexPicked] += (1 / N[indexPicked]) * (valueGenerated - Q[indexPicked])
 
             rewards[run, i] = valueGenerated
 
@@ -79,3 +75,4 @@ def run_UCB(c=2.0, runs=100, iterations=1000):
             rewards[run, i] = valueGenerated
 
     return np.mean(rewards, axis=0)
+
