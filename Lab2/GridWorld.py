@@ -74,11 +74,11 @@ def executeActionSequence(currentPos, grid, moveList):
 
         if grid[pos[0]][pos[1]] == 20:
             totalReward += 20
-            print(f"Executed: {move:<5} -> New Pos: {pos} | Goal Reached!")
+            #print(f"Executed: {move:<5} -> New Pos: {pos} | Goal Reached!")
             break
         else:
             totalReward -= 1
-            print(f"Executed: {move:<5} -> New Pos: {pos} | Success: {success}")
+            #print(f"Executed: {move:<5} -> New Pos: {pos} | Success: {success}")
 
     return totalDistance, totalReward, pos
 
@@ -119,7 +119,9 @@ rows = 7
 gridWorld = [[0 for i in range(cols)] for j in range(rows)]
 agent = 42
 currentPos = [6, 0]
-gridWorld[0][6] = 20
+gridWorld[0][0] = 20
+
+random.seed()
 
 for x in range(6):
     gridWorld[2][x] = -1
@@ -127,34 +129,45 @@ for x in range(6):
 direction = "word"
 state = False
 
-optimalPath = getOptimalPath(gridWorld, currentPos, [0,6] )
-executeActionSequence(currentPos,gridWorld,optimalPath)
+optimalPath = getOptimalPath(gridWorld, currentPos, [0,0] )
+totalDistance, totalReward, pos = executeActionSequence(currentPos,gridWorld,optimalPath)
+print("Greedy Agent Return:" + str(totalReward))
 
 
-for x in range(50):
-    move = random.randint(1,4)
-    match move:
-        case 1:
-            direction = "Left"
-            currentPos, gridWorld, state = actionLeft(currentPos, gridWorld)
-            if not state:
-                direction = "None"
-        case 2:
-            direction = "Right"
-            currentPos, gridWorld, state = actionRight(currentPos, gridWorld)
-            if not state:
-                direction = "None"
-        case 3:
-            direction = "Up"
-            currentPos, gridWorld, state = actionUp(currentPos, gridWorld)
-            if not state:
-                direction = "None"
-        case 4:
-            direction = "Down"
-            currentPos, gridWorld, state = actionDown(currentPos, gridWorld)
-            if not state:
-                direction = "None"
-    print(direction)
+for y in range(20):
+    totalReward = 0
+    currentPos = [6, 0]
+    for x in range(50):
+        move = random.randint(1,4)
+        match move:
+            case 1:
+                direction = "Left"
+                currentPos, gridWorld, state = actionLeft(currentPos, gridWorld)
+                if not state:
+                    direction = "None"
+            case 2:
+                direction = "Right"
+                currentPos, gridWorld, state = actionRight(currentPos, gridWorld)
+                if not state:
+                    direction = "None"
+            case 3:
+                direction = "Up"
+                currentPos, gridWorld, state = actionUp(currentPos, gridWorld)
+                if not state:
+                    direction = "None"
+            case 4:
+                direction = "Down"
+                currentPos, gridWorld, state = actionDown(currentPos, gridWorld)
+                if not state:
+                    direction = "None"
+        if gridWorld[currentPos[0]][currentPos[1]] == 20:
+            totalReward += 20
+            #(f"Executed: {move:<5} -> New Pos: {pos} | Goal Reached!")
+            break
+        else:
+            totalReward -= 1
+            #print(f"Executed: {move:<5} -> New Pos: {pos} | Success: {state}")
+    print("Random Agent Return:" + str(totalReward))
     
 
 
