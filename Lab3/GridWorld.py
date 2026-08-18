@@ -117,51 +117,58 @@ def getOptimalPath(grid, startPos, goalPos):
 cols = 4
 rows = 4
 gridWorld = [[0 for i in range(cols)] for j in range(rows)]
-agent = 42
-currentPos = [3, 0]
-
-random.seed()
 
 
-direction = "word"
-state = False
-reached = False
+
+
+
+#agent = 42
+#currentPos = [3, 0]
+
+#random.seed()
+
+
+#direction = "word"
+# state = False
+# reached = False
 #optimalPath = getOptimalPath(gridWorld, currentPos, [0,0] )
 #totalDistance, totalReward, pos = executeActionSequence(currentPos,gridWorld,optimalPath)
 #print("Greedy Agent Return:" + str(totalReward))
 
-totalReward = 0
-while not (reached):
-    move = random.randint(1,4)
-    match move:
-        case 1:
-            direction = "Left"
-            currentPos, gridWorld, state = actionLeft(currentPos, gridWorld)
-            if not state:
-                direction = "None"
-        case 2:
-            direction = "Right"
-            currentPos, gridWorld, state = actionRight(currentPos, gridWorld)
-            if not state:
-                direction = "None"
-        case 3:
-            direction = "Up"
-            currentPos, gridWorld, state = actionUp(currentPos, gridWorld)
-            if not state:
-                direction = "None"
-        case 4:
-            direction = "Down"
-            currentPos, gridWorld, state = actionDown(currentPos, gridWorld)
-            if not state:
-                direction = "None"        
-    if currentPos[0] == 0 and currentPos[1]==0:
-        reached = True
-        break
-    else:
-        totalReward -= 1
+# totalReward = 0
+# while not (reached):
+#     move = random.randint(1,4)
+#     match move:
+#         case 1:
+#             direction = "Left"
+#             currentPos, gridWorld, state = actionLeft(currentPos, gridWorld)
+#             if not state:
+#                 direction = "None"
+#         case 2:
+#             direction = "Right"
+#             currentPos, gridWorld, state = actionRight(currentPos, gridWorld)
+#             if not state:
+#                 direction = "None"
+#         case 3:
+#             direction = "Up"
+#             currentPos, gridWorld, state = actionUp(currentPos, gridWorld)
+#             if not state:
+#                 direction = "None"
+#         case 4:
+#             direction = "Down"
+#             currentPos, gridWorld, state = actionDown(currentPos, gridWorld)
+#             if not state:
+#                 direction = "None"        
+#     if currentPos[0] == 0 and currentPos[1]==0:
+#         reached = True
+#         break
+#     else:
+#         totalReward -= 1
     
-print("Random Agent Return:" + str(totalReward))    
+# print("Random Agent Return:" + str(totalReward))    
         
-    
+
+
+#
 
 
