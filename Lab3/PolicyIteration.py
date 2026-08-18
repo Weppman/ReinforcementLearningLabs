@@ -144,11 +144,34 @@ plt.ylabel("Rows")
 plt.xticks(range(4))
 plt.yticks(range(4))
 
-plt.savefig("value_heatmap.png",dpi = 150)
+#plt.savefig("value_heatmap.png",dpi = 150)
+#plt.show()
+
+
+
+# varying discount rates plot
+
+discounts = np.logspace(-0.2,0,num = 20)
+
+in_place_iterations = []
+two_array_iterations = []
+
+for discount in discounts:
+    _, place_count = policy_eval_in_place(gamma= discount,theta = 0.01)
+    _, two_count = policy_eval_two_array(gamma=discount,theta = 0.01)
+    in_place_iterations.append(place_count)
+    two_array_iterations.append(two_count)
+
+
+plt.figure(figsize=(8,5))
+plt.plot(discounts, in_place_iterations,label = "In-Place", color = "blue")
+plt.plot(discounts, two_array_iterations,label = "Two-Array", color = "red")
+
+plt.xlabel("Discount Rates")
+plt.ylabel("No. of Iterations to converge")
+plt.title("Policy Evaluation versions at Different Discount Rates")
+plt.legend()
+plt.grid(True, alpha= 0.4)
+
+plt.savefig("discount_rates_plot.png",dpi = 150)
 plt.show()
-
-
-
-
-
-
