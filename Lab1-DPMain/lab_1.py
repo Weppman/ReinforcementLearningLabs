@@ -1,7 +1,7 @@
 ###
 # Group Members
 # Joshua Weppelman:2591952
-# Name:Student Number
+# Michael Anokye-Boateng:2382971
 # Name:Student Number
 # Name:Student Number
 ###
