@@ -3,7 +3,7 @@
 # Joshua Weppelman:2591952
 # Michael Anokye-Boateng:2382971
 # Suhail Jadwat:2430921
-# Name:Student Number
+# Liam Binedell:2574850 
 ###
 
 import numpy as np
