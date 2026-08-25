@@ -2,13 +2,14 @@
 # Group Members
 # Joshua Weppelman:2591952
 # Michael Anokye-Boateng:2382971
-# Name:Student Number
+# Suhail Jadwat:2430921
 # Name:Student Number
 ###
 
 import numpy as np
 from environments.gridworld import GridworldEnv
 import timeit
+import time
 import matplotlib.pyplot as plt
 import math
 import gym
@@ -250,8 +251,19 @@ def main():
 
     print("*" * 5 + " Policy iteration " + "*" * 5)
     print("")
-    # Call policy_iteration
-    policy, v = policy_iteration(env)
+
+    #Range of discounts
+    discountRate = np.logspace(-0.2,0,num=30)
+
+    policyRecordings = open("policy.txt","w")
+    valueRecordings = open("value.txt","w")
+
+    for rate in discountRate:
+        # Call policy_iteration
+        start = time.time()
+        policy, v = policy_iteration(env,discount_factor=rate)
+        end = time.time()
+        policyRecordings.write(str(end-start) + " " + str(rate) + "\n")
 
     # Print out best action for each state in grid shape
     best_actions = np.array([ACTION_MAP[np.argmax(p)] for p in policy]).reshape(env.shape)
@@ -276,8 +288,13 @@ def main():
 
     print("*" * 5 + " Value iteration " + "*" * 5)
     print("")
-    # Call value_iteration
-    policy, v = value_iteration(env)
+
+    for rate in discountRate:
+        # Call value_iteration
+        start = time.time()
+        policy, v = value_iteration(env,discount_factor=rate)
+        end = time.time()
+        valueRecordings.write(str(end-start) + " " + str(rate) + "\n")
 
     # Print out best action for each state in grid shape
     best_actions = np.array([ACTION_MAP[np.argmax(p)] for p in policy]).reshape(env.shape)
