@@ -45,7 +45,7 @@ class CliffAgent:
 
 
 
-    def get_action(self, obs: tuple[int, int, bool]) -> int:
+    def get_action(self, obs) -> int:
            
         # decide to explore or exploit 
         if np.random.random() < self.epsilon:
@@ -60,17 +60,17 @@ class CliffAgent:
 
     def sarsa_learn(
             self,
-            obs: tuple[int, int, bool],
+            obs: int,
             action: int,
             reward: float,
-            terminated: bool,
-            next_obs: tuple[int, int, bool],
+            done: bool,
+            next_obs: int,
             next_action: int,                
     ):
 
 
         # td error
-        if terminated:
+        if done:
             td_target = reward
         else:
             td_target = reward + self.discount_factor * self.q_values[next_obs][next_action]
@@ -87,10 +87,17 @@ class CliffAgent:
                 self.e_trace[state][a] *= self.discount_factor * self.eligibility 
 
 
+def make_value_grid(agent):
+    n_states = agent.env.observation_space.n
+    grid = np.array([np.max(agent.q_values[s]) for s in range(n_states)])
+    return grid
+
+
 
 def training_sars(agent,episodes,steps):
 
     episode_returns = []
+    episode_heatmaps = []
     env = agent.env
 
     for _ in range(episodes):
@@ -119,14 +126,55 @@ def training_sars(agent,episodes,steps):
                 break
 
         episode_returns.append(total_reward)
+        episode_heatmaps.append(make_value_grid(agent))
         
 
-    return episode_returns
-  
+    return episode_returns, episode_heatmaps
+
 
 
 
 # runs and plotting
+
+#heatmaps 
+run_heatmaps = {}
+for lambda_val in lamda_vals:
+
+    # Initialise the environment and agent
+    env = gym.make('CliffWalking-v0')
+
+    agent = CliffAgent(
+    env=env,
+    learning_rate=learning_rate,
+    initial_epsilon=epsilon,
+    discount_factor=gamma,
+    eligibility_decay=lambda_val
+    )
+
+    _, cliffmaps = training_sars(agent,n_episodes,max_steps)
+
+    run_heatmaps[lambda_val] = cliffmaps
+    env.close()
+
+
+
+for i in range(n_episodes):
+    fig, axes = plt.subplots(1, len(lamda_vals), figsize=(15,6))
+    for ax, lambda_val in zip(axes, lamda_vals):
+        im = ax.imshow(run_heatmaps[lambda_val][i], cmap = 'magma', vmin = -100, vmax = 0)
+        ax.set_title(f"lambda = {lambda_val}")
+        ax.set_xticks([])
+        ax.set_yticks([])
+    fig.suptitle(f"Episode {i + 1}")
+    fig.colorbar(im,ax = axes, fraction = 0.02)
+    imname = f"episode_{i+1}.png"
+    fig.savefig(imname, dpi =150)
+    plt.close(fig)
+
+
+
+# 100 run average and variance
+
 returns_per_trace = {}
 
 
@@ -137,7 +185,7 @@ for lambda_val in lamda_vals:
     for i in range(n_runs):
 
         # Initialise the environment and agent
-        env = gym.make('CliffWalking-v1')
+        env = gym.make('CliffWalking-v0')
 
         agent = CliffAgent(
         env=env,
@@ -147,23 +195,29 @@ for lambda_val in lamda_vals:
         eligibility_decay=lambda_val
         )
 
+        training_sars_returns,_ = training_sars(agent,n_episodes,max_steps)
 
-        all_returns_sarsa.append(training_sars(agent,n_episodes,max_steps))
+
+        all_returns_sarsa.append(training_sars_returns)
         env.close()
 
+
     avg_sarsa = np.mean(all_returns_sarsa,axis = 0)
-    returns_per_trace[lambda_val] = avg_sarsa
+    std_sarsa = np.std(all_returns_sarsa,axis = 0)
+    returns_per_trace[lambda_val] = (avg_sarsa, std_sarsa)
 
 
 
 
 plt.figure(figsize=(10, 6))
-for lambda_val, avg_returns in returns_per_trace.items():
-    plt.plot(avg_returns, label=f"lambda = {lambda_val}")
+for lambda_val, (avg_returns,var_returns) in returns_per_trace.items():
+    episodes = np.arange(len(avg_returns))
+    plt.plot(episodes, avg_returns, label=f"lambda = {lambda_val}")
+    plt.errorbar(episodes,avg_returns, yerr=var_returns, fmt = 'o',capsize=5,capthick=2)
 
 plt.xlabel('Episodes')
 plt.ylabel('Average Return')
-plt.title('SARSA on CliffWalking Environment')
+plt.title('Average SARSA Returns on CliffWalking Environment')
 plt.legend()
 
 plt.grid(True, alpha=0.2)
