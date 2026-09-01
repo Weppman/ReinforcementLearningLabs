@@ -1,5 +1,5 @@
 
-
+import os
 import gym
 import numpy as np
 from collections import defaultdict
@@ -90,7 +90,7 @@ class CliffAgent:
 def make_value_grid(agent):
     n_states = agent.env.observation_space.n
     grid = np.array([np.max(agent.q_values[s]) for s in range(n_states)])
-    return grid
+    return grid.reshape(4,12)
 
 
 
@@ -136,6 +136,9 @@ def training_sars(agent,episodes,steps):
 
 # runs and plotting
 
+filepath = "./Homework4/cliffmaps"
+os.makedirs(filepath,exist_ok=True)
+
 #heatmaps 
 run_heatmaps = {}
 for lambda_val in lamda_vals:
@@ -156,19 +159,21 @@ for lambda_val in lamda_vals:
     run_heatmaps[lambda_val] = cliffmaps
     env.close()
 
+vmin = min(f.min() for lam in lamda_vals for f in run_heatmaps[lam])
+vmax = max(f.max() for lam in lamda_vals for f in run_heatmaps[lam])
 
 
 for i in range(n_episodes):
     fig, axes = plt.subplots(1, len(lamda_vals), figsize=(15,6))
     for ax, lambda_val in zip(axes, lamda_vals):
-        im = ax.imshow(run_heatmaps[lambda_val][i], cmap = 'magma', vmin = -100, vmax = 0)
+        im = ax.imshow(run_heatmaps[lambda_val][i], cmap = 'viridis', vmin = vmin, vmax = vmax)
         ax.set_title(f"lambda = {lambda_val}")
         ax.set_xticks([])
         ax.set_yticks([])
     fig.suptitle(f"Episode {i + 1}")
     fig.colorbar(im,ax = axes, fraction = 0.02)
     imname = f"episode_{i+1}.png"
-    fig.savefig(imname, dpi =150)
+    fig.savefig(f"{filepath}/{imname}", dpi =150)
     plt.close(fig)
 
 
@@ -212,8 +217,10 @@ for lambda_val in lamda_vals:
 plt.figure(figsize=(10, 6))
 for lambda_val, (avg_returns,var_returns) in returns_per_trace.items():
     episodes = np.arange(len(avg_returns))
-    plt.plot(episodes, avg_returns, label=f"lambda = {lambda_val}")
-    plt.errorbar(episodes,avg_returns, yerr=var_returns, fmt = 'o',capsize=5,capthick=2)
+    line, = plt.plot(episodes, avg_returns, label=f"lambda = {lambda_val}")
+    #plt.errorbar(episodes,avg_returns, yerr=var_returns, color=line.get_color())
+    plt.fill_between(episodes, avg_returns - var_returns, avg_returns + var_returns, color = line.get_color(), alpha = 0.2 )
+
 
 plt.xlabel('Episodes')
 plt.ylabel('Average Return')
@@ -221,6 +228,7 @@ plt.title('Average SARSA Returns on CliffWalking Environment')
 plt.legend()
 
 plt.grid(True, alpha=0.2)
+plt.savefig("cliffwalking_returns.png", format='png', dpi = 150)
 plt.show()
 
 
