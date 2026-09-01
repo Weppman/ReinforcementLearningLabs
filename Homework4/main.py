@@ -43,6 +43,8 @@ class CliffAgent:
         #action space - Discrete (4) moving [u,r,d,l]
         #observation space - 48 - players current position
 
+
+
     def get_action(self, obs: tuple[int, int, bool]) -> int:
            
         # decide to explore or exploit 
@@ -68,18 +70,21 @@ class CliffAgent:
 
 
         # td error
-        td_target = reward + self.discount_factor * self.q_values[next_obs][next_action]
+        if terminated:
+            td_target = reward
+        else:
+            td_target = reward + self.discount_factor * self.q_values[next_obs][next_action]
+        
         td_error = td_target - self.q_values[obs][action]
 
         # trace update
         self.e_trace[obs][action] += 1
 
         # update to all state-action pairs
-        for state, a in self.q_values:
-            self.q_values[state][a] = self.q_values[state][a] + self.lr * td_error * self.e_trace[state][a]
-            self.e_trace[state][a] = self.discount_factor * self.eligibility * self.e_trace[obs][action]
-
-
+        for state in self.q_values:
+            for a in range(self.env.action_space.n):
+                self.q_values[state][a] = self.q_values[state][a] + self.lr * td_error * self.e_trace[state][a]
+                self.e_trace[state][a] *= self.discount_factor * self.eligibility 
 
 
 
@@ -90,6 +95,7 @@ def training_sars(agent,episodes,steps):
 
     for _ in range(episodes):
 
+        agent.e_trace = defaultdict(lambda: np.zeros(env.action_space.n))
         obs, info = env.reset()
         total_reward = 0
 
@@ -121,33 +127,43 @@ def training_sars(agent,episodes,steps):
 
 
 # runs and plotting
-all_returns_sarsa = []
+returns_per_trace = {}
 
 
-for i in range(10):
+for lambda_val in lamda_vals:
 
-    # Initialise the environment and agent
-    env = gym.make('CliffWalking-v1')
+    all_returns_sarsa = []
 
-    agent = CliffAgent(
-    env=env,
-    learning_rate=learning_rate,
-    initial_epsilon=epsilon,
-    discount_factor=gamma
-    )
+    for i in range(n_runs):
+
+        # Initialise the environment and agent
+        env = gym.make('CliffWalking-v1')
+
+        agent = CliffAgent(
+        env=env,
+        learning_rate=learning_rate,
+        initial_epsilon=epsilon,
+        discount_factor=gamma,
+        eligibility_decay=lambda_val
+        )
 
 
-    all_returns_sarsa.append(training_sars(agent,n_episodes,max_steps))
-    env.close()
+        all_returns_sarsa.append(training_sars(agent,n_episodes,max_steps))
+        env.close()
 
-avg_sarsa = np.mean(all_returns_sarsa,axis = 0)
+    avg_sarsa = np.mean(all_returns_sarsa,axis = 0)
+    returns_per_trace[lambda_val] = avg_sarsa
+
+
 
 
 plt.figure(figsize=(10, 6))
-plt.plot(avg_sarsa, color ='b', label='SARSA')
+for lambda_val, avg_returns in returns_per_trace.items():
+    plt.plot(avg_returns, label=f"lambda = {lambda_val}")
+
 plt.xlabel('Episodes')
 plt.ylabel('Average Return')
-plt.title('Q-Learning vs SARSA on CliffWalking Environment')
+plt.title('SARSA on CliffWalking Environment')
 plt.legend()
 
 plt.grid(True, alpha=0.2)
