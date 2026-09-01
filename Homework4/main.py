@@ -7,11 +7,14 @@ from matplotlib import pyplot as plt
 
 
 # hyper parameters
-learning_rate = 0.1         # How fast to learn, alpha for
-n_episodes = 1000           # number of epsiodes
-start_epsilon = 0.1         # dictates exploration against exploration
+learning_rate = 0.5        # alpha
+n_episodes = 200           # number of epsiodes
+epsilon = 0.1         
 gamma = 0.99
 max_steps = 100
+lamda_vals = [0,0.3,0.5]   #run 200 episodes on each lamda val,
+n_runs = 100               #for 100 runs
+
 
 class CliffAgent:
     def __init__(
@@ -20,6 +23,7 @@ class CliffAgent:
         learning_rate: float,
         initial_epsilon: float,
         discount_factor: float,
+        eligibility_decay: float,
     ):
         
 
@@ -28,13 +32,13 @@ class CliffAgent:
         #numpy and defaultdict create structure all initialized to zero
         self.env = env
         self.q_values = defaultdict(lambda: np.zeros(env.action_space.n))
+        self.e_trace = defaultdict(lambda: np.zeros(env.action_space.n))
 
         #learning parameters
         self.lr = learning_rate #alpha
         self.discount_factor = discount_factor  # gamma, the effect of future rewards
         self.epsilon = initial_epsilon  # exploration parameter
-    
-    
+        self.eligibility = eligibility_decay
 
         #action space - Discrete (4) moving [u,r,d,l]
         #observation space - 48 - players current position
@@ -61,12 +65,21 @@ class CliffAgent:
             next_obs: tuple[int, int, bool],
             next_action: int,                
     ):
-        
 
-        #sarsa bellman-equation
-        value = self.q_values[obs][action] + self.lr * (reward + self.discount_factor * self.q_values[next_obs][next_action] - self.q_values[obs][action])
-        
-        self.q_values[obs][action] = value
+
+        # td error
+        td_target = reward + self.discount_factor * self.q_values[next_obs][next_action]
+        td_error = td_target - self.q_values[obs][action]
+
+        # trace update
+        self.e_trace[obs][action] += 1
+
+        # update to all state-action pairs
+        for state, a in self.q_values:
+            self.q_values[state][a] = self.q_values[state][a] + self.lr * td_error * self.e_trace[state][a]
+            self.e_trace[state][a] = self.discount_factor * self.eligibility * self.e_trace[obs][action]
+
+
 
 
 
@@ -77,28 +90,19 @@ def training_sars(agent,episodes,steps):
 
     for _ in range(episodes):
 
-        #start a new training session
         obs, info = env.reset()
         total_reward = 0
 
-        #choose an initial action
         action = agent.get_action(obs)
-
 
         #carry out training
         for _ in range(steps):
 
-           
-            #take the action and see what happens
             next_obs,reward, terminated,truncated,info = env.step(action)
-
-            #choose nex action
             next_action = agent.get_action(next_obs)
 
 
-            #learn from experience
             agent.sarsa_learn(obs,action,reward,terminated,next_obs,next_action)
-
 
             total_reward += reward
            
@@ -115,13 +119,6 @@ def training_sars(agent,episodes,steps):
   
 
 
-# Initialise the environment and agent
-#env = gym.make('CliffWalking-v0')
-
-#env = gym.make('CliffWalking-v0', render_mode='human')
-#human for visual window, rgb_array for image arrays
-
-
 
 # runs and plotting
 all_returns_sarsa = []
@@ -135,7 +132,7 @@ for i in range(10):
     agent = CliffAgent(
     env=env,
     learning_rate=learning_rate,
-    initial_epsilon=start_epsilon,
+    initial_epsilon=epsilon,
     discount_factor=gamma
     )
 
