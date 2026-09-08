@@ -2,8 +2,8 @@
 # Group Members
 # Liam Binedell:257480
 # Joshua Weppelman:2591952
-# Name:Student Number
-# Name:Student Number
+# Suhail Jadwad:240921
+# Michael Anokye-Boateng:2382971
 ###
 
 
