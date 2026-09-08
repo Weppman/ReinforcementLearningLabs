@@ -324,8 +324,8 @@ def mc_control_epsilon_greedy(
             obs = next_obs
 
         G = 0
-        for episode in ep_transitions:
-            obs, action, reward = episode
+        for transition in ep_transitions:
+            obs, action, reward = transition
             G = discount_factor * G + reward
             state_action = (obs, action)
             if state_action not in visited:
@@ -372,11 +372,38 @@ def SARSA(env, num_episodes, discount_factor=1.0, epsilon=0.1, alpha=0.5, print_
         episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes)
     )
 
-    # Update statistics after getting a reward - use within loop, call the following lines
-    # stats.episode_rewards[i_episode] += reward
-    # stats.episode_lengths[i_episode] = t
+    for ep in range(num_episodes):
+        obs, _ = env.reset()
+        action_probs = policy(obs)
+        action = np.random.choice(env.action_space.n, p=action_probs)
 
-    raise NotImplementedError
+        for t in itertools.count():
+            next_obs, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
+
+            next_action_probs = policy(next_obs)
+            next_action = np.random.choice(env.action_space.n, p=next_action_probs)
+            td_target = reward + discount_factor * Q[next_obs][next_action]
+            td_delta = td_target - Q[obs][action]
+            Q[obs][action] += alpha * td_delta
+
+            stats.episode_rewards[ep] += reward
+            stats.episode_lengths[ep] += 1
+
+            if done:
+                break
+
+            obs = next_obs
+            action = next_action
+
+        if print_ and ep % 100 == 0:
+            print("\rEpisode {}/{}.".format(ep, num_episodes), end="")
+            sys.stdout.flush()
+
+    if print_:
+        print()
+
+    return Q, stats
 
 
 def q_learning(
@@ -411,9 +438,36 @@ def q_learning(
         episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes)
     )
 
-    # Update statistics after getting a reward - use within loop, call the following lines
-    # stats.episode_rewards[i_episode] += reward
-    # stats.episode_lengths[i_episode] = t
+    for ep in range(num_episodes):
+        obs, _ = env.reset()
+
+        for t in itertools.count():
+            action_probs = policy(obs)
+            action = np.random.choice(env.action_space.n, p=action_probs)
+            next_obs, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
+
+            best_next_action = np.argmax(Q[next_obs])
+            td_target = reward + discount_factor * Q[next_obs][best_next_action]
+            td_delta = td_target - Q[obs][action]
+            Q[obs][action] += alpha * td_delta
+
+            stats.episode_rewards[ep] += reward
+            stats.episode_lengths[ep] += 1
+
+            if done:
+                break
+
+            obs = next_obs
+
+        if print_ and ep % 100 == 0:
+            print("\rEpisode {}/{}.".format(ep, num_episodes), end="")
+            sys.stdout.flush()
+
+    if print_:
+        print()
+
+    return Q, stats
 
 
 def run_mc():
@@ -490,7 +544,7 @@ def run_td():
     )
     td_plot_episode_stats(stats_sarsa, "SARSA")
     td_plot_values(sarsa_q_values, "SARSA")
-    print("")
+    print()
 
     print("Q learning\n")
     ql_q_values, stats_q_learning = q_learning(
@@ -503,7 +557,7 @@ def run_td():
     )
     td_plot_episode_stats(stats_q_learning, "Q learning")
     td_plot_values(ql_q_values, "Q learning")
-    print("")
+    print()
 
 
 if __name__ == "__main__":
