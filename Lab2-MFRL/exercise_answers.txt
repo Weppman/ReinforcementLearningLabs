@@ -1,0 +1,9 @@
+Section 1.1:
+4) Yes. The 10,000 episode run has noisy, high-variance value estimates because many states are visited only a few times. The 500,000 episode run produces smoother, more accurate estimates because each state is visited many more times, so the sample averages converge closer to the true expected returns (law of large numbers).
+
+Section 2.2:
+4) Q-learning learns an aggressive policy that hugs the cliff edge because its update uses max_a Q(S',a), assuming optimal future behavior. SARSA learns a safer policy further from the cliff because its update uses Q(S',A') where A' is the actual ε-greedy action, so it accounts for the risk of random exploration causing a cliff fall.
+
+5) With ε=0 evaluation, Q-learning performs better (shorter path, higher reward) because it learned the optimal cliff-hugging route. SARSA performs worse (longer path, lower reward) because it learned a conservative route that was only optimal under exploration noise.
+
+6) With ε=0 training, both algorithms struggle due to lack of exploration. Q-learning may still learn a reasonable policy through its off-policy max operator but can get stuck in local optima. SARSA performs worse since it's on-policy and can only learn from actions it actually takes - it will likely converge to the first path it finds and never explore better alternatives.
