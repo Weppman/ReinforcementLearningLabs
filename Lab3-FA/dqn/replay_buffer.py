@@ -40,10 +40,10 @@ class ReplayBuffer:
         for i in indices:
             data = self._storage[i]
             state, action, reward, next_state, done = data
-            states.append(np.array(state, copy=False))
+            states.append(np.asarray(state))
             actions.append(action)
             rewards.append(reward)
-            next_states.append(np.array(next_state, copy=False))
+            next_states.append(np.asarray(next_state))
             dones.append(done)
         return (
             np.array(states),
