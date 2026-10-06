@@ -1,0 +1,32 @@
+A summary of the DQN algorithm
+The training process of the DQN algorithm:
+During DQN training, at each time step, the agent selects an action using an epsilon-greedy strategy. This epsilon threshold decays over the course of training, so that the agent explores more at the start of training before it starts to exploit the learned policy more. So, if a sampled random value is less than or equal to the current epsilon threshold, the action will be a randomly sampled action. Otherwise, the agent will select the best action. The agent then acts, and transition information from that action is added to the replay buffer so the agent's memory can be updated. The replay buffer specifically stores (state, action, reward, next state, done), and it helps break the correlation between consecutive frames. 
+The agent performs an optimisation step every time the learning-frequency rate of time steps has passed. This optimization step samples a random batch of transitions from the replay memory and then updates the policy network by minimising the Huber loss between its Q values for actions taken and the temporal difference target, computed using the target network. The target network is updated at a target-update-frequency rate, which happens after many more step iterations and helps stabilise learning. In the update, the weights of the target network are overwritten with a copy of the policy network’s weights. This is the training that then continues until the agent completes all its required timesteps.
+For the Q-Network architecture:
+The actual Q-Network architecture combines a CNN with fully connected layers. After some preprocessing, the input to the convolutional neural network is an 84 x 84 x 4 image. 
+The first convolutional layer applies 32 filters of size 8 x 8 with stride 4. This is followed by a ReLU activation function. The second convolutional layer applies 64 filters of size 4 x 4 with a stride of 2, followed by the ReLU activation. Then the third and final convolutional layer applies 64 filters of size 3 x 3 with a stride of 1, followed by ReLU. 
+This then leads to the first fully connected layer, which has 512 nodes and ReLU activation. This is then connected to the output layer, which has nodes equal to the number of possible actions the player has. Each node in this output layer represents a Q-value for that action.
+For the list of hyperparameters : 
+•	Seed (42): This determines the random seed used and allows for reproducible results
+•	Env (ALE/Pong-v5): The name of the up-to-date Pong Gymnasium environment. Used to create the environment for our training agent. It has frameskip = 1 and sticky actions off
+•	Replay Buffer Size (5000): This determines the size of the replay buffer and how many previous transitions are stored in memory to be sampled from.
+•	Learning Rate (0.0001): This specifies the learning rate for the Adam optimizer
+•	Discount Factor (0.99): Determines how much future rewards are weighted relative to immediate rewards when computing the return
+•	Num Steps (1000000): This is the total number of steps that the environment will be run for
+•	Batch Size (256): The number of transitions that get optimized during one optimization step.
+•	Learning Starts (10000): This specifies the number of steps to wait before learning starts
+•	Learning Frequency (5): This specifies the number of steps/iterations between optimization steps
+•	Use-double-dqn (True): Use double deep Q learning, which helps prevent overly optimistic estimates of action values in our temporal difference targets. Double DQN specifically uses the policy Q network to select the best action of the next state, and then it evaluates it against the target Q network. 
+•	Target update frequency (1000): number of environment steps between the target network having its weights updated
+•	Eps-Start (1.0): The start value of epsilon for the epsilon-greedy policy, which sets the threshold for the agent to choose exploration actions.
+•	Eps-End (0.01): As the epsilon threshold decays, this is the minimum value that epsilon will reach and be fixed at.
+•	Eps-Fraction (0.1): This specifies the fraction of total steps for which epsilon will decay linearly to its minimum value
+•	Print-freq (10): This controls the logging frequency
+ 
+
+
+
+ 
+
+
+
