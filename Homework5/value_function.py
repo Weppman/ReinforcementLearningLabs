@@ -5,6 +5,15 @@
 # with some naming convention changes
 #
 # Tile coding starts
+
+###
+# Group Members
+# Liam Binedell:257480
+# Joshua Weppelman:2591952
+# Suhail Jadwad:240921
+# Michael Anokye-Boateng:2382971
+###
+
 from math import floor
 import numpy as np
 import matplotlib.pyplot as plt
